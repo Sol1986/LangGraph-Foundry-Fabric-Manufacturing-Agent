@@ -1,0 +1,47 @@
+# Local Azure deployment state and credentials
+.azure/
+.aws/
+
+# Environment settings and secrets (keep sanitized templates)
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Python virtual environments
+.venv/
+.venv-*/
+venv/
+env/
+
+# Python bytecode and tool caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Coverage and build artifacts
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+build/
+dist/
+*.egg-info/
+
+# Local editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and generated deployment packages
+*.log
+appPackage.zip
+.appPackage.zip.azd-generated
+
+# Local access-role request payload containing an identity ID
+/body.json

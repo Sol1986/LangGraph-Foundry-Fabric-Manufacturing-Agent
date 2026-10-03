@@ -1,0 +1,516 @@
+{
+  "summary": {
+    "tool_selection": 1.0,
+    "tool_arguments": 1.0,
+    "evidence_completeness": 1.0,
+    "evidence_retrieved": 1.0,
+    "groundedness": 1.0,
+    "hallucination_free": 1.0,
+    "root_cause_accuracy": 0.8
+  },
+  "thresholds": {
+    "root_cause_accuracy": 0.8,
+    "tool_selection": 0.9,
+    "tool_arguments": 0.9,
+    "evidence_completeness": 0.85,
+    "groundedness": 0.95,
+    "hallucination_free": 1.0
+  },
+  "failed_metrics": [],
+  "results": [
+    {
+      "id": "H-01",
+      "category": "root_cause",
+      "query": "What happened at Plant 2 on Oct 1st? Output looked way off.",
+      "answer": "Short answer: Plant 2 missed target by 2,260 units on 2026-10-01 (attainment 81.9%). The primary cause was repeated overheating stops on Line 3 (machine CNC-104). There were also material-wait stoppages on Lines 1, 2 and 4 that contributed.\n\nEvidence (exact figures from the system)\n- Plant performance: target 12,500 ; actual 10,240 ; variance -2,260 ; attainment 81.9%.\n- Line performance (worst first):\n  - Line 3: target 3,300 ; actual 2,560 ; variance -740 ; attainment 77.6% (largest single-line shortfall).\n  - Line 4: target 3,000 ; actual 2,430 ; variance -570 ; attainment 81.0%.\n  - Line 2: target 3,200 ; actual 2,650 ; variance -550 ; attainment 82.8%.\n  - Line 1: target 3,000 ; actual 2,600 ; variance -400 ; attainment 86.7%.\n- Downtime (Plant 2 total 289 minutes). By line:\n  - Line 3: 127 minutes (three events on CNC-104: 52, 38, 37 minutes) \u2014 reason_code = OVERHEAT.\n  - Line 4: 63 minutes \u2014 reason_code = MATERIAL_WAIT (ASS-407).\n  - Line 2: 58 minutes \u2014 reason_code = MATERIAL_WAIT (ASS-405).\n  - Line 1: 41 minutes \u2014 reason_code = MATERIAL_WAIT (ASS-404).\n- CNC-104 maintenance:\n  - Preventive lubrication done 2026-09-14.\n  - Coolant system last serviced 2026-03-12 (next due listed as 2026-06-10 \u2014 i.e., overdue).\n  - Open corrective work order WO-20260929-014 (opened 2026-09-29): \"High spindle temperature alarm... coolant reservoir level low and topped up. Machine returned to service. Monitor.\"\n- Inventory (Plant 2 on 2026-10-01): BRKT-220 (Mounting bracket) on_hand 90 ; reorder_point 1200 ; below_reorder = true. Other stocked items shown are above reorder.\n\nInterpretation / main cause\n- The largest single contributor to the plant shortfall was repeated OVERHEAT stops on CNC-104 (Line 3), causing 127 minutes of downtime on that line and the largest line variance (-740 units). CNC-104 had a recent open work order reporting high spindle temperature and a low coolant reservoir (WO opened 2026-09-29), and the coolant-system PM shows no service since 2026-03-12 (next due 2026-06-10), which is consistent with an overheating root cause.\n\nContributing factors\n- Material-wait stoppages on Lines 1, 2 and 4 (total 162 minutes) also reduced output. Inventory shows at least one item (BRKT-220) below its reorder point, which could have contributed to material waits, but the available data does not map specific inventory items to the lines that experienced MATERIAL_WAIT, so I cannot confirm which item(s) caused those waits.\n\nRecommended immediate actions\n1. Escalate and complete corrective maintenance for CNC-104 now (close WO-20260929-014, inspect coolant system, replace/repair cooling components if needed) to stop repeated OVERHEAT events.  \n2. Prioritize coolant-system service and monitoring on CNC-104 (coolant PM is overdue).  \n3. Investigate supply chain / kitting for Lines 1, 2 and 4 \u2014 confirm which parts caused the MATERIAL_WAIT events and expedite replenishment; BRKT-220 should be reordered (on_hand 90 vs reorder_point 1,200).  \n4. Run a short recovery plan on Line 3 (overtime or balance line load) once CNC-104 is stable to recover lost output.\n\nIf you want, I can:\n- Open the downtime events for a specific line or machine on Oct 1 for more detail.\n- Pull the maintenance history or work orders for ASS-404 / ASS-405 / ASS-407 (the machines that reported MATERIAL_WAIT).\n- Create a short checklist for the maintenance/production teams to follow this shift. Which would you like next?",
+      "calls": [
+        {
+          "tool": "get_production_performance",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"target\": 12500, \"actual\": 10240, \"variance\": -2260, \"attainment_pct\": 81.9}"
+        },
+        {
+          "tool": "get_line_performance",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"lines\": [{\"line\": \"Line 3\", \"target\": 3300, \"actual\": 2560, \"variance\": -740, \"attainment_pct\": 77.6}, {\"line\": \"Line 4\", \"target\": 3000, \"actual\": 2430, \"variance\": -570, \"attainment_pct\": 81}, {\"line\": \"Line 2\", \"target\": 3200, \"actual\": 2650, \"variance\": -550, \"attainment_pct\": 82.8}, {\"line\": \"Line 1\", \"target\": 3000, \"actual\": 2600, \"variance\": -400, \"attainment_pct\": 86.7}]}"
+        },
+        {
+          "tool": "get_downtime_events",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"total_minutes\": 289, \"minutes_by_line\": {\"Line 3\": 127, \"Line 1\": 41, \"Line 4\": 63, \"Line 2\": 58}, \"events\": [{\"event_time\": \"2026-10-01 06:42\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 52, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 08:05\", \"line\": \"Line 1\", \"machine_id\": \"ASS-404\", \"downtime_minutes\": 41, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-10-01 10:20\", \"line\": \"Line 4\", \"machine_id\": \"ASS-407\", \"downtime_minutes\": 63, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-10-01 11:18\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 38, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 13:30\", \"line\": \"Line 2\", \"machine_id\": \"ASS-405\", \"downtime_minutes\": 58, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-10-01 15:55\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 37, \"reason_code\": \"OVERHEAT\"}]}"
+        },
+        {
+          "tool": "get_maintenance_history",
+          "args": {
+            "machine_id": "CNC-104"
+          },
+          "result": "{\"machine_id\": \"CNC-104\", \"schedule\": [{\"machine_id\": \"CNC-104\", \"component\": \"lubrication\", \"interval_days\": 30, \"last_service_date\": \"2026-09-14\", \"next_due_date\": \"2026-10-14\"}, {\"machine_id\": \"CNC-104\", \"component\": \"coolant_system\", \"interval_days\": 90, \"last_service_date\": \"2026-03-12\", \"next_due_date\": \"2026-06-10\"}], \"recent_records\": [{\"record_id\": \"MR-1409\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-09-14\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1410\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-08-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1411\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-07-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1412\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-06-20\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1413\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-05-22\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1414\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-04-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1415\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-03-23\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1421\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-03-12\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"coolant_system\", \"description\": \"Scheduled coolant system service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1416\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-02-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1417\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-01-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}], \"work_orders\": [{\"work_order_id\": \"WO-20260929-014\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"opened_date\": \"2026-09-29\", \"priority\": \"LOW\", \"status\": \"OPEN\", \"category\": \"CORRECTIVE\", \"description\": \"High spindle temperature alarm during run. Operator noted coolant reservoir level low and topped up. Machine returned to service. Monitor.\"}, {\"work_order_id\": \"WO-20260915-006\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"opened_date\": \"2026-09-15\", \"priority\": \"LOW\", \"status\": \"CLOSED\", \"category\": \"PREVENTIVE\", \"description\": \"Routine chip conveyor clean.\"}]}"
+        },
+        {
+          "tool": "get_inventory_status",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"items\": [{\"item_id\": \"BRKT-220\", \"item_name\": \"Mounting bracket\", \"on_hand_units\": 90, \"reorder_point\": 1200, \"below_reorder\": true}, {\"item_id\": \"FSTN-018\", \"item_name\": \"Fastener kit\", \"on_hand_units\": 4413, \"reorder_point\": 3000, \"below_reorder\": false}, {\"item_id\": \"HSNG-310\", \"item_name\": \"Housing casing\", \"on_hand_units\": 2440, \"reorder_point\": 1500, \"below_reorder\": false}, {\"item_id\": \"PKG-077\", \"item_name\": \"Carton pack\", \"on_hand_units\": 4017, \"reorder_point\": 2500, \"below_reorder\": false}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0,
+        "root_cause_accuracy": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": [],
+        "judge_reasoning": "The analyst correctly identifies the same primary cause as the answer key: repeated OVERHEAT stops on CNC-104 (Line 3) totaling 127 minutes and links this to an overdue coolant-system service (last service 2026-03-12). They also note material-wait stoppages and the BRKT-220 stock shortfall as a likely contributing factor, though cautiously (not claiming a definite mapping). This does not contradict the key."
+      }
+    },
+    {
+      "id": "H-02",
+      "category": "root_cause",
+      "query": "Plant 2 hit only 82% of plan on October 1. Is that a machine problem, a supply problem, or both?",
+      "answer": "Short answer: Both \u2014 primarily a machine problem on Line 3 (CNC-104 overheating) with a clear secondary contribution from material shortages (MATERIAL_WAIT) on other lines.\n\nEvidence (exact figures from the data)\n- Plant-level: target 12,500; actual 10,240; variance -2,260; attainment 81.9%.\n- Line-level (2026-10-01): \n  - Line 3: target 3,300; actual 2,560; variance -740; attainment 77.6% (worst miss).\n  - Line 4: target 3,000; actual 2,430; variance -570; attainment 81.0%.\n  - Line 2: target 3,200; actual 2,650; variance -550; attainment 82.8%.\n  - Line 1: target 3,000; actual 2,600; variance -400; attainment 86.7%.\n- Downtime (plant total 289 minutes; minutes by line match the misses):\n  - Line 3 total downtime 127 minutes \u2014 all from machine CNC-104 with three OVERHEAT events (52, 38, 37 minutes).\n  - Material waits on other lines: ASS-404 (Line 1) 41 minutes, ASS-407 (Line 4) 63 minutes, ASS-405 (Line 2) 58 minutes \u2014 total 162 minutes for MATERIAL_WAIT events.\n- Maintenance (CNC-104):\n  - Lubrication service: last done 2026-09-14 (interval 30 days; next due 2026-10-14).\n  - Coolant system: last service 2026-03-12 (interval 90 days; next due 2026-06-10) \u2014 this is overdue per the schedule.\n  - Recent work order WO-20260929-014 (opened 2026-09-29, status OPEN) notes: \"High spindle temperature alarm during run. Operator noted coolant reservoir level low and topped up. Machine returned to service. Monitor.\"\n- Inventory (Plant 2 on 2026-10-01):\n  - BRKT-220 (Mounting bracket): on_hand 90; reorder_point 1,200; below_reorder = true.\n  - Other stocked items returned not-below-reorder (FSTN-018, HSNG-310, PKG-077).\n\nInterpretation\n- Primary cause: CNC-104 overheating on Line 3 (127 minutes lost) is the single largest contributor to the plant shortfall and explains Line 3\u2019s -740 variance. Maintenance records show the coolant-system PM is overdue and there is an open WO citing high spindle temperature and low coolant reservoir \u2014 consistent with overheating stops.\n- Secondary/contributing cause: material shortages caused 3 separate MATERIAL_WAIT stoppages totaling 162 minutes across Lines 1, 2 and 4, which materially reduced output on those lines. Inventory shows at least one item (BRKT-220) is well below reorder point; the downtime events do not identify the specific part, so we cannot prove BRKT-220 caused those waits, but the low-stock flag is a likely contributing factor.\n\nRecommended next actions (concise)\n1. Prioritize CNC-104: complete the open WO, inspect/repair coolant system, confirm coolant reservoir and coolant-system integrity, and monitor for reoccurrence.  \n2. Review PM schedule for CNC-104 coolant system and bring it up to date (coolant PM is overdue).  \n3. Investigate the 3 MATERIAL_WAIT events to identify the parts causing the stops; expedite replenishment if those items are low. Immediately review BRKT-220 replenishment (on_hand 90 vs reorder_point 1,200).  \n4. After fixes, re-check Line 3 attainment and material-wait frequency.\n\nIf you want, I can:\n- Open the downtime events list filtered to a specific line or machine, or\n- Pull recent inventory transactions for BRKT-220 to see usage and incoming PO status. Which would you like?",
+      "calls": [
+        {
+          "tool": "get_production_performance",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"target\": 12500, \"actual\": 10240, \"variance\": -2260, \"attainment_pct\": 81.9}"
+        },
+        {
+          "tool": "get_line_performance",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"lines\": [{\"line\": \"Line 3\", \"target\": 3300, \"actual\": 2560, \"variance\": -740, \"attainment_pct\": 77.6}, {\"line\": \"Line 4\", \"target\": 3000, \"actual\": 2430, \"variance\": -570, \"attainment_pct\": 81}, {\"line\": \"Line 2\", \"target\": 3200, \"actual\": 2650, \"variance\": -550, \"attainment_pct\": 82.8}, {\"line\": \"Line 1\", \"target\": 3000, \"actual\": 2600, \"variance\": -400, \"attainment_pct\": 86.7}]}"
+        },
+        {
+          "tool": "get_downtime_events",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"total_minutes\": 289, \"minutes_by_line\": {\"Line 3\": 127, \"Line 1\": 41, \"Line 4\": 63, \"Line 2\": 58}, \"events\": [{\"event_time\": \"2026-10-01 06:42\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 52, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 08:05\", \"line\": \"Line 1\", \"machine_id\": \"ASS-404\", \"downtime_minutes\": 41, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-10-01 10:20\", \"line\": \"Line 4\", \"machine_id\": \"ASS-407\", \"downtime_minutes\": 63, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-10-01 11:18\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 38, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 13:30\", \"line\": \"Line 2\", \"machine_id\": \"ASS-405\", \"downtime_minutes\": 58, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-10-01 15:55\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 37, \"reason_code\": \"OVERHEAT\"}]}"
+        },
+        {
+          "tool": "get_inventory_status",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"items\": [{\"item_id\": \"BRKT-220\", \"item_name\": \"Mounting bracket\", \"on_hand_units\": 90, \"reorder_point\": 1200, \"below_reorder\": true}, {\"item_id\": \"FSTN-018\", \"item_name\": \"Fastener kit\", \"on_hand_units\": 4413, \"reorder_point\": 3000, \"below_reorder\": false}, {\"item_id\": \"HSNG-310\", \"item_name\": \"Housing casing\", \"on_hand_units\": 2440, \"reorder_point\": 1500, \"below_reorder\": false}, {\"item_id\": \"PKG-077\", \"item_name\": \"Carton pack\", \"on_hand_units\": 4017, \"reorder_point\": 2500, \"below_reorder\": false}]}"
+        },
+        {
+          "tool": "get_maintenance_history",
+          "args": {
+            "machine_id": "CNC-104"
+          },
+          "result": "{\"machine_id\": \"CNC-104\", \"schedule\": [{\"machine_id\": \"CNC-104\", \"component\": \"lubrication\", \"interval_days\": 30, \"last_service_date\": \"2026-09-14\", \"next_due_date\": \"2026-10-14\"}, {\"machine_id\": \"CNC-104\", \"component\": \"coolant_system\", \"interval_days\": 90, \"last_service_date\": \"2026-03-12\", \"next_due_date\": \"2026-06-10\"}], \"recent_records\": [{\"record_id\": \"MR-1409\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-09-14\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1410\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-08-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1411\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-07-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1412\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-06-20\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1413\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-05-22\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1414\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-04-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1415\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-03-23\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1421\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-03-12\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"coolant_system\", \"description\": \"Scheduled coolant system service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1416\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-02-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1417\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-01-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}], \"work_orders\": [{\"work_order_id\": \"WO-20260929-014\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"opened_date\": \"2026-09-29\", \"priority\": \"LOW\", \"status\": \"OPEN\", \"category\": \"CORRECTIVE\", \"description\": \"High spindle temperature alarm during run. Operator noted coolant reservoir level low and topped up. Machine returned to service. Monitor.\"}, {\"work_order_id\": \"WO-20260915-006\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"opened_date\": \"2026-09-15\", \"priority\": \"LOW\", \"status\": \"CLOSED\", \"category\": \"PREVENTIVE\", \"description\": \"Routine chip conveyor clean.\"}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0,
+        "root_cause_accuracy": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": [],
+        "judge_reasoning": "The analyst identified the same primary causes as the answer key: machine (CNC-104 overheating, 127 minutes, coolant-system PM overdue) and supply (BRKT-220 severely below reorder point). Downtime and inventory figures match the key. The analyst\u2019s caution about not definitively proving BRKT-220 directly caused the MATERIAL_WAIT events is not a contradiction\u2014just a conservative qualification\u2014so the answer aligns with the key."
+      }
+    },
+    {
+      "id": "H-03",
+      "category": "decoy",
+      "query": "Why was Plant 1 below target on September 24?",
+      "answer": "Short answer\n- Plant 1 missed target on 2026-09-24 by 726 units (target 8,900; actual 8,174). The primary cause was Line 2 underperformance, driven by a mechanical failure on PRE-202.\n\nEvidence (exact figures from the data)\n- Plant-level: target 8,900; actual 8,174; variance -726; attainment 91.8%.\n- By line (worst variance first):\n  - Line 2: target 2,800; actual 2,471; variance -329; attainment 88.3%.\n  - Line 3: target 3,100; actual 2,873; variance -227.\n  - Line 1: target 3,000; actual 2,830; variance -170.\n- Downtime (total 157 minutes). Minutes by line: Line 2 = 89 min, Line 3 = 49 min, Line 1 = 19 min.\n- Line 2 events (these explain most of Line 2 downtime):\n  - 2026-09-24 20:58 \u2014 PRE-202 \u2014 70 minutes \u2014 reason_code: MECH_FAILURE\n  - 2026-09-24 18:46 \u2014 WEL-302 \u2014 19 minutes \u2014 reason_code: CHANGEOVER\n- Other notable events:\n  - Line 3 had two MATERIAL_WAIT stops (ASS-403 41 min at 06:05; PRE-203 8 min at 06:58) \u2014 total 49 min on Line 3.\n  - Line 1 had an ELECTRICAL stop ASS-401 19 min at 06:24.\n- Inventory on 2026-09-24 (Plant 1): two items below reorder point \u2014 HSNG-310 (on_hand 1,373; reorder 1,500) and PKG-077 (on_hand 2,352; reorder 2,500). Other stocked items were above reorder.\n\nConclusion \u2014 main cause and contributing factors\n- Main cause: Line 2 mechanical failure on PRE-202 (70 minutes) plus a 19-minute changeover produced 89 minutes of Line 2 downtime, and Line 2 had the largest shortfall (\u2011329 units). Those two events are the primary evidence linking the miss to Line 2.\n- Contributing factors: material waits affected Line 3 (49 min) and an electrical stop affected Line 1 (19 min), which increased the overall plant shortfall but were smaller contributors. Inventory shows two items below reorder (HSNG-310, PKG-077), which could contribute to future material_wait risks (Line 3 already had material_wait events), but they did not directly explain the Line 2 mechanical failure.\n\nRecommended next checks (brief)\n- Inspect PRE-202 maintenance/repair records and address the MECH_FAILURE root cause (a maintenance-history check is warranted if PRE-202 fails again).\n- Review changeover procedures on WEL-302 to reduce changeover time.\n- Replenish HSNG-310 and PKG-077 to reduce risk of material_wait events.\n\nIf you want, I can fetch PRE-202 maintenance history for 2026-09-02 to 2026-09-24 and the full work-order record next.",
+      "calls": [
+        {
+          "tool": "get_production_performance",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-24"
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-24\", \"target\": 8900, \"actual\": 8174, \"variance\": -726, \"attainment_pct\": 91.8}"
+        },
+        {
+          "tool": "get_line_performance",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-24"
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-24\", \"lines\": [{\"line\": \"Line 2\", \"target\": 2800, \"actual\": 2471, \"variance\": -329, \"attainment_pct\": 88.3}, {\"line\": \"Line 3\", \"target\": 3100, \"actual\": 2873, \"variance\": -227, \"attainment_pct\": 92.7}, {\"line\": \"Line 1\", \"target\": 3000, \"actual\": 2830, \"variance\": -170, \"attainment_pct\": 94.3}]}"
+        },
+        {
+          "tool": "get_downtime_events",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-24",
+            "line": null
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-24\", \"total_minutes\": 157, \"minutes_by_line\": {\"Line 3\": 49, \"Line 1\": 19, \"Line 2\": 89}, \"events\": [{\"event_time\": \"2026-09-24 06:05\", \"line\": \"Line 3\", \"machine_id\": \"ASS-403\", \"downtime_minutes\": 41, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-09-24 06:24\", \"line\": \"Line 1\", \"machine_id\": \"ASS-401\", \"downtime_minutes\": 19, \"reason_code\": \"ELECTRICAL\"}, {\"event_time\": \"2026-09-24 06:58\", \"line\": \"Line 3\", \"machine_id\": \"PRE-203\", \"downtime_minutes\": 8, \"reason_code\": \"MATERIAL_WAIT\"}, {\"event_time\": \"2026-09-24 18:46\", \"line\": \"Line 2\", \"machine_id\": \"WEL-302\", \"downtime_minutes\": 19, \"reason_code\": \"CHANGEOVER\"}, {\"event_time\": \"2026-09-24 20:58\", \"line\": \"Line 2\", \"machine_id\": \"PRE-202\", \"downtime_minutes\": 70, \"reason_code\": \"MECH_FAILURE\"}]}"
+        },
+        {
+          "tool": "get_inventory_status",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-24",
+            "item_id": null
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-24\", \"items\": [{\"item_id\": \"BRKT-220\", \"item_name\": \"Mounting bracket\", \"on_hand_units\": 2337, \"reorder_point\": 1200, \"below_reorder\": false}, {\"item_id\": \"FSTN-018\", \"item_name\": \"Fastener kit\", \"on_hand_units\": 6567, \"reorder_point\": 3000, \"below_reorder\": false}, {\"item_id\": \"HSNG-310\", \"item_name\": \"Housing casing\", \"on_hand_units\": 1373, \"reorder_point\": 1500, \"below_reorder\": true}, {\"item_id\": \"PKG-077\", \"item_name\": \"Carton pack\", \"on_hand_units\": 2352, \"reorder_point\": 2500, \"below_reorder\": true}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0,
+        "root_cause_accuracy": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": [],
+        "judge_reasoning": "The analyst identified the same primary cause as the answer key: Plant 1 missed target by 726 units and the largest shortfall was on Line 2 (\u2011329 units) driven by a 70-minute MECH_FAILURE on PRE-202 plus a 19-minute changeover on WEL-302. The analyst\u2019s figures and event listing match the key and they do not contradict the key\u2019s conclusion (they do not claim a maintenance-history failure). Therefore the analyst\u2019s answer is correct."
+      }
+    },
+    {
+      "id": "H-04",
+      "category": "normal_day",
+      "query": "Why did Plant 1 miss target on September 15?",
+      "answer": "Short answer: Plant 1 missed target on 2026-09-15 mainly because Line 3 fell short after a mechanical failure on machine CNC-103. Secondary electrical stoppages on Line 2 and Line 1 also contributed.\n\nEvidence (exact figures from the systems)\n- Plant-level: target 8,900 / actual 8,410 \u2192 variance -490 (attainment 94.5%).\n- Line-level (worst first):\n  - Line 3: target 3,100 / actual 2,899 \u2192 variance -201 (attainment 93.5%).\n  - Line 1: target 3,000 / actual 2,847 \u2192 variance -153 (attainment 94.9%).\n  - Line 2: target 2,800 / actual 2,664 \u2192 variance -136 (attainment 95.1%).\n- Downtime on 2026-09-15 (total 115 minutes; minutes by line: Line 1 = 21, Line 2 = 48, Line 3 = 46):\n  - 2026-09-15 21:14 \u2014 Line 3 \u2014 machine CNC-103 \u2014 46 minutes \u2014 reason: MECH_FAILURE.\n  - 2026-09-15 18:55 \u2014 Line 2 \u2014 machine CNC-102 \u2014 48 minutes \u2014 reason: ELECTRICAL.\n  - 2026-09-15 14:10 \u2014 Line 1 \u2014 machine PRE-201 \u2014 21 minutes \u2014 reason: ELECTRICAL.\n- Inventory (Plant 1, 2026-09-15): listed items (BRKT-220, FSTN-018, HSNG-310, PKG-077) are all above reorder point (none below_reorder = true/false shows false), so raw-material stock shortages were not a factor.\n\nNotes on maintenance/history\n- No machine recorded more than one downtime event on 2026-09-15, so the maintenance-history check for repeatedly-stopping machines was not required/triggered. If you want me to pull CNC-103\u2019s maintenance history and recent downtime frequency (to see whether this MECH_FAILURE is recurring), I can fetch that next.\n\nRecommended immediate actions (optional)\n- Inspect CNC-103 (mechanical failure) and resolve root cause; review recent maintenance and failure history for CNC-103.\n- Investigate the electrical faults on CNC-102 and PRE-201 to prevent repeat stoppages.\n- Consider short-term schedule adjustments to recover the ~490-unit shortfall.\n\nWould you like me to fetch CNC-103\u2019s maintenance history and recent downtime record?",
+      "calls": [
+        {
+          "tool": "get_production_performance",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-15"
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-15\", \"target\": 8900, \"actual\": 8410, \"variance\": -490, \"attainment_pct\": 94.5}"
+        },
+        {
+          "tool": "get_line_performance",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-15"
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-15\", \"lines\": [{\"line\": \"Line 3\", \"target\": 3100, \"actual\": 2899, \"variance\": -201, \"attainment_pct\": 93.5}, {\"line\": \"Line 1\", \"target\": 3000, \"actual\": 2847, \"variance\": -153, \"attainment_pct\": 94.9}, {\"line\": \"Line 2\", \"target\": 2800, \"actual\": 2664, \"variance\": -136, \"attainment_pct\": 95.1}]}"
+        },
+        {
+          "tool": "get_downtime_events",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-15",
+            "line": null
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-15\", \"total_minutes\": 115, \"minutes_by_line\": {\"Line 1\": 21, \"Line 2\": 48, \"Line 3\": 46}, \"events\": [{\"event_time\": \"2026-09-15 14:10\", \"line\": \"Line 1\", \"machine_id\": \"PRE-201\", \"downtime_minutes\": 21, \"reason_code\": \"ELECTRICAL\"}, {\"event_time\": \"2026-09-15 18:55\", \"line\": \"Line 2\", \"machine_id\": \"CNC-102\", \"downtime_minutes\": 48, \"reason_code\": \"ELECTRICAL\"}, {\"event_time\": \"2026-09-15 21:14\", \"line\": \"Line 3\", \"machine_id\": \"CNC-103\", \"downtime_minutes\": 46, \"reason_code\": \"MECH_FAILURE\"}]}"
+        },
+        {
+          "tool": "get_inventory_status",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-09-15",
+            "item_id": null
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-09-15\", \"items\": [{\"item_id\": \"BRKT-220\", \"item_name\": \"Mounting bracket\", \"on_hand_units\": 1895, \"reorder_point\": 1200, \"below_reorder\": false}, {\"item_id\": \"FSTN-018\", \"item_name\": \"Fastener kit\", \"on_hand_units\": 5461, \"reorder_point\": 3000, \"below_reorder\": false}, {\"item_id\": \"HSNG-310\", \"item_name\": \"Housing casing\", \"on_hand_units\": 2653, \"reorder_point\": 1500, \"below_reorder\": false}, {\"item_id\": \"PKG-077\", \"item_name\": \"Carton pack\", \"on_hand_units\": 4146, \"reorder_point\": 2500, \"below_reorder\": false}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    },
+    {
+      "id": "H-05",
+      "category": "lookup",
+      "query": "What was Plant 3's attainment on September 22?",
+      "answer": "Plant 3's attainment on 2026-09-22 was 94.5%.",
+      "calls": [
+        {
+          "tool": "get_production_performance",
+          "args": {
+            "plant": "Plant 3",
+            "date": "2026-09-22"
+          },
+          "result": "{\"plant\": \"Plant 3\", \"date\": \"2026-09-22\", \"target\": 7400, \"actual\": 6992, \"variance\": -408, \"attainment_pct\": 94.5}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    },
+    {
+      "id": "H-06",
+      "category": "lookup",
+      "query": "Which line was furthest below target at Plant 3 on September 17, and by how much?",
+      "answer": "Line 2 \u2014 it was 637 units below target (target 2,600; actual 1,963; attainment 75.5%).",
+      "calls": [
+        {
+          "tool": "get_line_performance",
+          "args": {
+            "plant": "Plant 3",
+            "date": "2026-09-17"
+          },
+          "result": "{\"plant\": \"Plant 3\", \"date\": \"2026-09-17\", \"lines\": [{\"line\": \"Line 2\", \"target\": 2600, \"actual\": 1963, \"variance\": -637, \"attainment_pct\": 75.5}, {\"line\": \"Line 3\", \"target\": 2400, \"actual\": 2290, \"variance\": -110, \"attainment_pct\": 95.4}, {\"line\": \"Line 1\", \"target\": 2400, \"actual\": 2400, \"variance\": 0, \"attainment_pct\": 100}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    },
+    {
+      "id": "H-07",
+      "category": "lookup",
+      "query": "When was CNC-104 installed, and which plant and line is it on?",
+      "answer": "CNC-104 was installed on 2016-03-22. It is located in Plant 2, Line 3.",
+      "calls": [
+        {
+          "tool": "get_maintenance_history",
+          "args": {
+            "machine_id": "CNC-104"
+          },
+          "result": "{\"machine_id\": \"CNC-104\", \"schedule\": [{\"machine_id\": \"CNC-104\", \"component\": \"lubrication\", \"interval_days\": 30, \"last_service_date\": \"2026-09-14\", \"next_due_date\": \"2026-10-14\"}, {\"machine_id\": \"CNC-104\", \"component\": \"coolant_system\", \"interval_days\": 90, \"last_service_date\": \"2026-03-12\", \"next_due_date\": \"2026-06-10\"}], \"recent_records\": [{\"record_id\": \"MR-1409\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-09-14\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1410\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-08-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1411\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-07-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1412\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-06-20\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1413\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-05-22\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1414\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-04-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1415\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-03-23\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1421\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-03-12\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"coolant_system\", \"description\": \"Scheduled coolant system service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1416\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-02-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1417\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"date\": \"2026-01-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}], \"work_orders\": [{\"work_order_id\": \"WO-20260929-014\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"opened_date\": \"2026-09-29\", \"priority\": \"LOW\", \"status\": \"OPEN\", \"category\": \"CORRECTIVE\", \"description\": \"High spindle temperature alarm during run. Operator noted coolant reservoir level low and topped up. Machine returned to service. Monitor.\"}, {\"work_order_id\": \"WO-20260915-006\", \"machine_id\": \"CNC-104\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"opened_date\": \"2026-09-15\", \"priority\": \"LOW\", \"status\": \"CLOSED\", \"category\": \"PREVENTIVE\", \"description\": \"Routine chip conveyor clean.\"}]}"
+        },
+        {
+          "tool": "get_machine_events",
+          "args": {
+            "machine_id": "CNC-104",
+            "start_date": "2026-01-01",
+            "end_date": "2026-10-01"
+          },
+          "result": "{\"machine\": {\"machine_id\": \"CNC-104\", \"machine_type\": \"CNC\", \"plant\": \"Plant 2\", \"line\": \"Line 3\", \"installation_date\": \"2016-03-22\"}, \"start_date\": \"2026-01-01\", \"end_date\": \"2026-10-01\", \"event_count\": 10, \"total_minutes\": 264, \"by_reason\": {\"CHANGEOVER\": {\"events\": 2, \"minutes\": 39}, \"OPERATOR_DELAY\": {\"events\": 1, \"minutes\": 17}, \"SENSOR_FAULT\": {\"events\": 2, \"minutes\": 55}, \"PLANNED_MAINT\": {\"events\": 1, \"minutes\": 12}, \"OVERHEAT\": {\"events\": 4, \"minutes\": 141}}, \"events\": [{\"event_time\": \"2026-09-05 14:32\", \"downtime_minutes\": 31, \"reason_code\": \"CHANGEOVER\"}, {\"event_time\": \"2026-09-08 13:04\", \"downtime_minutes\": 17, \"reason_code\": \"OPERATOR_DELAY\"}, {\"event_time\": \"2026-09-08 16:04\", \"downtime_minutes\": 31, \"reason_code\": \"SENSOR_FAULT\"}, {\"event_time\": \"2026-09-09 20:51\", \"downtime_minutes\": 12, \"reason_code\": \"PLANNED_MAINT\"}, {\"event_time\": \"2026-09-14 09:04\", \"downtime_minutes\": 24, \"reason_code\": \"SENSOR_FAULT\"}, {\"event_time\": \"2026-09-23 17:19\", \"downtime_minutes\": 8, \"reason_code\": \"CHANGEOVER\"}, {\"event_time\": \"2026-09-29 14:12\", \"downtime_minutes\": 14, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 06:42\", \"downtime_minutes\": 52, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 11:18\", \"downtime_minutes\": 38, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 15:55\", \"downtime_minutes\": 37, \"reason_code\": \"OVERHEAT\"}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    },
+    {
+      "id": "H-08",
+      "category": "lookup",
+      "query": "Is CNC-101 overdue for any maintenance?",
+      "answer": "No \u2014 CNC-101 is not overdue for scheduled maintenance as of 2026-10-01.\n\nEvidence from the maintenance system:\n- Lubrication: last service 2026-09-18, next due 2026-10-18.\n- Coolant system: last service 2026-07-18, next due 2026-10-16.\n\nRecent service records confirm those last-service dates, and there are no open work orders for CNC-101.",
+      "calls": [
+        {
+          "tool": "get_maintenance_history",
+          "args": {
+            "machine_id": "CNC-101"
+          },
+          "result": "{\"machine_id\": \"CNC-101\", \"schedule\": [{\"machine_id\": \"CNC-101\", \"component\": \"lubrication\", \"interval_days\": 30, \"last_service_date\": \"2026-09-18\", \"next_due_date\": \"2026-10-18\"}, {\"machine_id\": \"CNC-101\", \"component\": \"coolant_system\", \"interval_days\": 90, \"last_service_date\": \"2026-07-18\", \"next_due_date\": \"2026-10-16\"}], \"recent_records\": [{\"record_id\": \"MR-1001\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-09-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"M. Singh\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1002\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-08-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1003\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-07-23\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1013\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-07-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"coolant_system\", \"description\": \"Scheduled coolant system service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1004\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-06-20\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"L. Chen\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1005\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-05-24\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1006\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-04-23\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1014\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-04-21\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"coolant_system\", \"description\": \"Scheduled coolant system service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1007\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-03-23\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"M. Singh\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1008\", \"machine_id\": \"CNC-101\", \"plant\": \"Plant 1\", \"line\": \"Line 1\", \"date\": \"2026-02-24\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}], \"work_orders\": []}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0,
+        "root_cause_accuracy": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": [],
+        "judge_reasoning": "The analyst's answer matches the answer key exactly: both state CNC-101 is not overdue as of 2026-10-01 and list the same last-service and next-due dates for coolant (last 2026-07-18, next 2026-10-16) and lubrication (last 2026-09-18, next 2026-10-18). No contradictions."
+      }
+    },
+    {
+      "id": "H-09",
+      "category": "decoy",
+      "query": "Is WEL-302 a risk to Plant 1 production right now?",
+      "answer": "Short answer: Yes \u2014 WEL-302 presents a current risk to Plant 1 production.\n\nEvidence\n- Today (2026-10-01) WEL-302 had a SENSOR_FAULT downtime of 21 minutes at 11:19 (downtime events list for Plant 1 on 2026-10-01 shows WEL-302: 2026-10-01 11:19, downtime_minutes 21, reason_code SENSOR_FAULT).\n- Line impact: WEL-302 is on Plant 1, Line 2. Line 2 missed target by 254 units on 2026-10-01 (Line 2: target 2800, actual 2546, variance -254). Total Line 2 downtime today was 50 minutes (CNC-102 planned maint 29 min + WEL-302 sensor fault 21 min).\n- Recent reliability: WEL-302 had 6 downtime events from 2026-09-02 to 2026-10-01, totaling 154 minutes (event_count 6, total_minutes 154). By reason: ELECTRICAL 2 events / 74 minutes; CHANGEOVER 2 events / 26 minutes; OPERATOR_DELAY 1 event / 33 minutes; SENSOR_FAULT 1 event / 21 minutes.\n- Maintenance: The electrode_assembly PM for WEL-302 is overdue (last service 2026-06-12, next_due_date 2026-09-10). Lubrication was last done 2026-09-13 (next due 2026-10-13). There are no work orders on record for this machine (work_orders: none).\n\nInterpretation\n- The sensor fault today directly reduced Line 2 output and contributed to the line shortfall. The machine also has a short history of electrical failures (74 minutes across 2 events) and an overdue electrode_assembly preventive (due 2026-09-10), which increases the risk of further stops.\n- There are currently no open work orders recorded to address these issues.\n\nRecommended immediate actions\n1. Raise a corrective work order for the SENSOR_FAULT and inspect/replace the sensor now.  \n2. Create a work order to inspect the electrode_assembly and address the overdue PM (last due 2026-09-10).  \n3. Monitor WEL-302 closely for repeat faults for the rest of the shift; prioritize spare/tech allocation to Line 2 while issues are unresolved.\n\nIf you want, I can open the specific downtime events or create a prioritized action list with contacts and estimated impact.",
+      "calls": [
+        {
+          "tool": "get_machine_events",
+          "args": {
+            "machine_id": "WEL-302",
+            "start_date": "2026-09-02",
+            "end_date": "2026-10-01"
+          },
+          "result": "{\"machine\": {\"machine_id\": \"WEL-302\", \"machine_type\": \"Welder\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"installation_date\": \"2013-07-25\"}, \"start_date\": \"2026-09-02\", \"end_date\": \"2026-10-01\", \"event_count\": 6, \"total_minutes\": 154, \"by_reason\": {\"ELECTRICAL\": {\"events\": 2, \"minutes\": 74}, \"CHANGEOVER\": {\"events\": 2, \"minutes\": 26}, \"OPERATOR_DELAY\": {\"events\": 1, \"minutes\": 33}, \"SENSOR_FAULT\": {\"events\": 1, \"minutes\": 21}}, \"events\": [{\"event_time\": \"2026-09-03 11:23\", \"downtime_minutes\": 37, \"reason_code\": \"ELECTRICAL\"}, {\"event_time\": \"2026-09-03 20:40\", \"downtime_minutes\": 7, \"reason_code\": \"CHANGEOVER\"}, {\"event_time\": \"2026-09-17 19:38\", \"downtime_minutes\": 33, \"reason_code\": \"OPERATOR_DELAY\"}, {\"event_time\": \"2026-09-18 16:42\", \"downtime_minutes\": 37, \"reason_code\": \"ELECTRICAL\"}, {\"event_time\": \"2026-09-24 18:46\", \"downtime_minutes\": 19, \"reason_code\": \"CHANGEOVER\"}, {\"event_time\": \"2026-10-01 11:19\", \"downtime_minutes\": 21, \"reason_code\": \"SENSOR_FAULT\"}]}"
+        },
+        {
+          "tool": "get_maintenance_history",
+          "args": {
+            "machine_id": "WEL-302"
+          },
+          "result": "{\"machine_id\": \"WEL-302\", \"schedule\": [{\"machine_id\": \"WEL-302\", \"component\": \"lubrication\", \"interval_days\": 30, \"last_service_date\": \"2026-09-13\", \"next_due_date\": \"2026-10-13\"}, {\"machine_id\": \"WEL-302\", \"component\": \"electrode_assembly\", \"interval_days\": 90, \"last_service_date\": \"2026-06-12\", \"next_due_date\": \"2026-09-10\"}], \"recent_records\": [{\"record_id\": \"MR-1114\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-09-13\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"J. Okafor\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1115\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-08-15\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1116\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-07-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"R. Alvarez\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1117\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-06-16\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1126\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-06-12\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"electrode_assembly\", \"description\": \"Scheduled electrode assembly service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1118\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-05-15\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1119\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-04-15\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"D. Petrov\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1120\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-03-18\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"L. Chen\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1127\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-03-11\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"electrode_assembly\", \"description\": \"Scheduled electrode assembly service completed per PM checklist.\", \"technician\": \"T. Brooks\", \"status\": \"COMPLETED\"}, {\"record_id\": \"MR-1121\", \"machine_id\": \"WEL-302\", \"plant\": \"Plant 1\", \"line\": \"Line 2\", \"date\": \"2026-02-19\", \"maintenance_type\": \"PREVENTIVE\", \"component\": \"lubrication\", \"description\": \"Scheduled lubrication service completed per PM checklist.\", \"technician\": \"M. Singh\", \"status\": \"COMPLETED\"}], \"work_orders\": []}"
+        },
+        {
+          "tool": "get_line_performance",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-10-01\", \"lines\": [{\"line\": \"Line 3\", \"target\": 3100, \"actual\": 2832, \"variance\": -268, \"attainment_pct\": 91.4}, {\"line\": \"Line 2\", \"target\": 2800, \"actual\": 2546, \"variance\": -254, \"attainment_pct\": 90.9}, {\"line\": \"Line 1\", \"target\": 3000, \"actual\": 2790, \"variance\": -210, \"attainment_pct\": 93}]}"
+        },
+        {
+          "tool": "get_downtime_events",
+          "args": {
+            "plant": "Plant 1",
+            "date": "2026-10-01"
+          },
+          "result": "{\"plant\": \"Plant 1\", \"date\": \"2026-10-01\", \"total_minutes\": 110, \"minutes_by_line\": {\"Line 3\": 60, \"Line 2\": 50}, \"events\": [{\"event_time\": \"2026-10-01 07:35\", \"line\": \"Line 3\", \"machine_id\": \"CNC-103\", \"downtime_minutes\": 60, \"reason_code\": \"CHANGEOVER\"}, {\"event_time\": \"2026-10-01 10:17\", \"line\": \"Line 2\", \"machine_id\": \"CNC-102\", \"downtime_minutes\": 29, \"reason_code\": \"PLANNED_MAINT\"}, {\"event_time\": \"2026-10-01 11:19\", \"line\": \"Line 2\", \"machine_id\": \"WEL-302\", \"downtime_minutes\": 21, \"reason_code\": \"SENSOR_FAULT\"}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0,
+        "root_cause_accuracy": 0.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": [],
+        "judge_reasoning": "The analyst\u2019s factual details (the 21\u2011minute SENSOR_FAULT, the 6 downtime events totalling 154 minutes, and the overdue electrode_assembly PM) match the key, but their conclusion contradicts it. The answer key judges WEL\u2011302 a watch item \u2014 overdue for service but showing no failure pattern or repeated stops and not an active cause of production loss. The analyst treats a single short SENSOR_FAULT and the overdue PM as an active current risk and attributes the Line 2 shortfall to WEL\u2011302, which conflicts with the key\u2019s assessment that the issue should be scheduled for PM rather than considered an active production cause."
+      }
+    },
+    {
+      "id": "H-10",
+      "category": "no_data",
+      "query": "Which operator was running Line 3 at Plant 2 on October 1?",
+      "answer": "I can't find operator names in the production data you gave me. I checked the Plant 2 Line 3 records for 2026-10-01 (three downtime events on CNC-104 at 06:42, 11:18 and 15:55 totalling 127 minutes) and those events do not include an operator field. Operator/shift assignments are not part of the available dataset \u2014 you'll need to check your MES/SCADA operator log, time & attendance system, or the plant shift supervisor/roster to get the operator name.",
+      "calls": [
+        {
+          "tool": "get_downtime_events",
+          "args": {
+            "plant": "Plant 2",
+            "date": "2026-10-01",
+            "line": "Line 3"
+          },
+          "result": "{\"plant\": \"Plant 2\", \"date\": \"2026-10-01\", \"total_minutes\": 127, \"minutes_by_line\": {\"Line 3\": 127}, \"events\": [{\"event_time\": \"2026-10-01 06:42\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 52, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 11:18\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 38, \"reason_code\": \"OVERHEAT\"}, {\"event_time\": \"2026-10-01 15:55\", \"line\": \"Line 3\", \"machine_id\": \"CNC-104\", \"downtime_minutes\": 37, \"reason_code\": \"OVERHEAT\"}]}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    },
+    {
+      "id": "H-11",
+      "category": "no_data",
+      "query": "Show me the service history for machine PRE-999.",
+      "answer": "I tried to fetch maintenance history but the system returned: \"Unknown machine PRE-999\". I don't have any service records for PRE-999.\n\nNext steps you can choose:\n- Check and resend the machine ID (for example IDs look like \"CNC-104\").\n- Ask me to search related data (downtime or defect events) if you want me to look for occurrences of PRE-999 \u2014 but I can only do that if the system recognises the ID.\n- Provide another machine ID and I'll fetch its maintenance history.",
+      "calls": [
+        {
+          "tool": "get_maintenance_history",
+          "args": {
+            "machine_id": "PRE-999"
+          },
+          "result": "{\"error\": \"Unknown machine PRE-999\"}"
+        }
+      ],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    },
+    {
+      "id": "H-12",
+      "category": "no_data",
+      "query": "How did Plant 2 perform on October 5?",
+      "answer": "I can\u2019t retrieve performance for October 5, 2026 \u2014 my production data only runs through 2026-10-01. \n\nWould you like Plant 2\u2019s performance for 2026-10-01 (the latest available date) or for another date between 2026-09-02 and 2026-10-01?",
+      "calls": [],
+      "scores": {
+        "tool_selection": 1.0,
+        "tool_arguments": 1.0,
+        "evidence_completeness": 1.0,
+        "evidence_retrieved": 1.0,
+        "groundedness": 1.0,
+        "hallucination_free": 1.0
+      },
+      "notes": {
+        "missing_facts": [],
+        "ungrounded_numbers": [],
+        "hallucination": []
+      }
+    }
+  ]
+}

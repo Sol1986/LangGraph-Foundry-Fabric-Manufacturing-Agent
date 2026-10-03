@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: manufacturing-agent
+services:
+    manufacturing-agent:
+        project: .
+        host: azure.ai.agent
+        language: docker
+        docker:
+            remoteBuild: true
+        uses:
+            - manufacturingproject
+        env:
+            AZURE_AI_MODEL_DEPLOYMENT_NAME: ${AZURE_AI_MODEL_DEPLOYMENT_NAME}
+            FABRIC_SQL_SERVER: ${FABRIC_SQL_SERVER}
+            FABRIC_DATABASE: ${FABRIC_DATABASE}
+            TOOLBOX_NAME: ${TOOLBOX_NAME}
+        container:
+            resources:
+                cpu: "0.5"
+                memory: 1Gi
+        kind: hosted
+        name: manufacturing-agent
+        protocols:
+            - protocol: responses
+              version: 2.0.0
+        startupCommand: python host.py
+    manufacturingproject:
+        host: azure.ai.project
+        deployments:
+            - model:
+                format: OpenAI
+                name: gpt-5-mini
+                version: "2025-08-07"
+              name: gpt-5-mini
+              sku:
+                capacity: 50
+                name: GlobalStandard
+        endpoint: https://manufacturing-agent-resource.services.ai.azure.com/api/projects/manufacturing-agent
+infra:
+    provider: microsoft.foundry

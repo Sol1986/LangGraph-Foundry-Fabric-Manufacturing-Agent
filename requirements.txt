@@ -1,0 +1,11 @@
+# Versions below are the ones this project was tested with. Upgrade deliberately, not by accident.
+langchain-azure-ai[hosting,tools]==1.2.10
+langchain-mcp-adapters==0.3.2
+langgraph==1.2.12
+langchain-core==1.6.6
+azure-identity==1.26.0
+mssql-python==1.15.0
+fastapi==0.142.2
+uvicorn==0.54.0
+requests==2.34.2
+python-dotenv==1.2.4
