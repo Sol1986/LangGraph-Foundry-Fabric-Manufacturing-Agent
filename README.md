@@ -1,8 +1,8 @@
-# Manufacturing Operations Investigation Agent
+# Manufacturing downtime investigation agent
 
 A portfolio project connecting **Microsoft Fabric**, **Microsoft Foundry**, and a **LangGraph agent** to investigate manufacturing performance across production, downtime, quality, inventory, and maintenance data. Seven operational tools retrieve structured evidence, while a Foundry IQ knowledge-base tool provides retrieval-augmented generation (RAG) over standard operating procedures (SOPs).
 
-The aim is to help answer **“Why did the plant miss its target?”**, not just **“What was its output?”**
+The aim is to help answer **“Why did the plant miss its target?”**, not just **“What was its output?”** and therefore investigate problems using multiple systems and recommend actions.
 
 ## Why this project matters
 
